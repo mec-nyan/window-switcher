@@ -109,12 +109,33 @@ function M.pick_window()
 
 	if target and target ~= current then
 		vim.api.nvim_set_current_win(target)
+		vim.notify("Switched to window " .. tostring(key) .. " nya", vim.log.levels.INFO)
 	elseif target == current then
 		vim.notify("Already here nya", vim.log.levels.INFO)
 	elseif key == "q" then
 		vim.notify("nya~~~~~!", vim.log.levels.INFO)
 	else
 		vim.notify("Not a window nya", vim.log.levels.WARN)
+	end
+end
+
+function M.setup(opts)
+	if not opts then
+		return
+	end
+
+	if opts.ignored_windows then
+		M.ignore_window = opts.ignored_windows
+	end
+
+	if opts.ignored_buffers then
+		M.ignored_buffers = opts.ignored_buffers
+	end
+
+	if opts.floats then
+		M.floats.width = opts.floats.width or M.floats.width
+		M.floats.height = opts.floats.height or M.floats.height
+		M.floats.border = opts.floats.border or M.floats.border
 	end
 end
 
