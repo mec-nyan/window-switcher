@@ -1,4 +1,14 @@
-local M = {}
+local M = {
+	floats = {
+		width = 7,
+		height = 3,
+		border = "bold",
+	},
+	ignored_buffers = {},
+	ignored_windows = {
+		nvim_tree = true,
+	},
+}
 
 ---@param number number
 ---@param width number
@@ -17,14 +27,22 @@ local function center_number(number, width, height)
 	return text
 end
 
-local function show_number(win, number)
+
+---@param win number
+---@param number number
+---@param opts table
+---@return number
+local function show_number(win, number, opts)
+	opts = opts or {}
+
 	local buf = vim.api.nvim_create_buf(false, true)
 	local width = vim.api.nvim_win_get_width(win)
 	local height = vim.api.nvim_win_get_height(win)
 
-	local box_height = 3
-	local box_width = 7
-	local opts = {
+	local box_height = opts.height or 3
+	local box_width = opts.width or 7
+
+	local win_opts = {
 		relative = "win",
 		win = win,
 		width = box_width,
@@ -32,16 +50,26 @@ local function show_number(win, number)
 		row = math.floor((height - box_height) / 2),
 		col = math.floor((width - box_width) / 2),
 		style = "minimal",
-		border = "bold",
+		border = opts.border or "bold",
 	}
 
 	local text = center_number(number, box_width, box_height)
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, text)
-	local float_win = vim.api.nvim_open_win(buf, false, opts)
+	local float_win = vim.api.nvim_open_win(buf, false, win_opts)
 
 	return float_win
 end
 
+function M.ignore_window(win)
+	if M.ignored_windows.nvim_tree then
+		local buf = vim.api.nvim_win_get_buf(win)
+		local name = vim.api.nvim_buf_get_name(buf)
+		if name:match("NvimTree_") then
+			return true
+		end
+	end
+	return false
+end
 
 function M.pick_window()
 	local windows = vim.api.nvim_list_wins()
@@ -50,14 +78,18 @@ function M.pick_window()
 	local win_map = {}
 	local floats = {}
 
-	for i, win in ipairs(windows) do
-		win_map[tostring(i)] = win
-		local float = show_number(win, i)
-		table.insert(floats, float)
+	local count = 0
+	for _, win in ipairs(windows) do
+		if not M.ignore_window(win) then
+			count = count + 1
+			win_map[tostring(count)] = win
+			local float = show_number(win, count, M.floats)
+			table.insert(floats, float)
+		end
 	end
 
 	vim.cmd.redraw()
-	vim.cmd.echo"'Window switcher nya: '"
+	vim.cmd.echo "'Window switcher nya: '"
 
 	local ok, char = pcall(vim.fn.getchar)
 
