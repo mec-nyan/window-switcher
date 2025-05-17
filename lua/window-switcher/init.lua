@@ -1,12 +1,29 @@
 local M = {}
 
+---@param number number
+---@param width number
+---@param height number
+---@return table
+local function center_number(number, width, height)
+	local num_str = tostring(number)
+	local padding = math.floor((width - #num_str) / 2)
+	local output = string.rep(" ", padding)
+	output = output .. num_str
+	local text = {}
+	for _ = 1, math.floor(height / 2) do
+		table.insert(text, "")
+	end
+	table.insert(text, output)
+	return text
+end
+
 local function show_number(win, number)
 	local buf = vim.api.nvim_create_buf(false, true)
 	local width = vim.api.nvim_win_get_width(win)
 	local height = vim.api.nvim_win_get_height(win)
 
 	local box_height = 3
-	local box_width = 6
+	local box_width = 7
 	local opts = {
 		relative = "win",
 		win = win,
@@ -18,11 +35,7 @@ local function show_number(win, number)
 		border = "bold",
 	}
 
-	local text = {}
-	for _ = 1, math.floor(box_height / 2) do
-		table.insert(text, "")
-	end
-	table.insert(text, string.format(string.format("%%%dd", math.floor(box_width / 2)), number))
+	local text = center_number(number, box_width, box_height)
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, text)
 	local float_win = vim.api.nvim_open_win(buf, false, opts)
 
@@ -44,7 +57,7 @@ function M.pick_window()
 	end
 
 	vim.cmd.redraw()
-	vim.cmd.echo"'Window switcher: '"
+	vim.cmd.echo"'Window switcher nya: '"
 
 	local ok, char = pcall(vim.fn.getchar)
 
@@ -55,7 +68,7 @@ function M.pick_window()
 	end
 
 	if not ok then
-		print("Input cancelled!")
+		print("Input cancelled nya!")
 		return
 	end
 
@@ -65,9 +78,11 @@ function M.pick_window()
 	if target and target ~= current then
 		vim.api.nvim_set_current_win(target)
 	elseif target == current then
-		-- Pass.
+		vim.notify("Already here nya", vim.log.levels.INFO)
+	elseif key == "q" then
+		vim.notify("nya~~~~~!", vim.log.levels.INFO)
 	else
-		vim.notify("'Not a valid window.'", vim.log.levels.WARN)
+		vim.notify("Not a window nya", vim.log.levels.WARN)
 	end
 end
 
