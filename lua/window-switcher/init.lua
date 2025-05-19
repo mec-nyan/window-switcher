@@ -7,6 +7,8 @@ local M = {
 	ignored_buffers = {},
 	ignored_windows = {
 		nvim_tree = true,
+		quickfix = true,
+		terminal = true,
 	},
 }
 
@@ -61,10 +63,24 @@ local function show_number(win, number, opts)
 end
 
 function M.ignore_window(win)
+	local buf = vim.api.nvim_win_get_buf(win)
+	local buftype = vim.api.nvim_get_option_value("buftype", { buf = buf })
+
 	if M.ignored_windows.nvim_tree then
-		local buf = vim.api.nvim_win_get_buf(win)
 		local name = vim.api.nvim_buf_get_name(buf)
 		if name:match("NvimTree_") then
+			return true
+		end
+	end
+
+	if M.ignored_windows.quickfix then
+		if buftype == "quickfix" or buftype == "qf" then
+			return true
+		end
+	end
+
+	if M.ignored_windows.terminal then
+		if buftype == "terminal" then
 			return true
 		end
 	end
