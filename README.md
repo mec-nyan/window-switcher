@@ -3,7 +3,7 @@
 A playful and lightweight window switcher/picker/chooser for **Neovim** that shows floating
 numbers in each window so you can quickly jump between them -- with some cat-like charm!
 
-<!-- TODO: Add screenshot here. -->
+![screenshot](/img/screenshot.png)
 
 ## Features
 
